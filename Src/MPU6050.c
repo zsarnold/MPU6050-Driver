@@ -72,7 +72,7 @@ HAL_StatusTypeDef MPU6050_ReadTemperature(MPU6050 *dev) {
 }
 
 HAL_StatusTypeDef MPU6050_ReadAccelerations(MPU6050 *dev) {
-	/*Read the raw temp registers (16bit)*/
+	/*Read the raw acc registers (16bit)*/
 	uint8_t regData[6];
 	HAL_StatusTypeDef status = MPU6050_ReadRegisters(dev, MPU6050_REG_ACCEL_XOUT_H, regData, 6);
 
@@ -82,10 +82,29 @@ HAL_StatusTypeDef MPU6050_ReadAccelerations(MPU6050 *dev) {
 	accRawSigned[1] = regData[2]<<8|regData[3];
 	accRawSigned[2] = regData[4]<<8|regData[5];
 
-	/*Page 30 equation for converting to Deg C*/
+	/*Page 30 equation for converting to G*/
 	dev->acc[0] = accRawSigned[0] / 16384;
 	dev->acc[1] = accRawSigned[1] / 16384;
 	dev->acc[2] = accRawSigned[2] / 16384;
+
+	return status;
+}
+
+HAL_StatusTypeDef MPU6050_ReadGyro(MPU6050 *dev) {
+	/*Read the raw gyro registers (16bit)*/
+	uint8_t regData[6];
+	HAL_StatusTypeDef status = MPU6050_ReadRegisters(dev, MPU6050_REG_GYRO_XOUT_H, regData, 6);
+
+	/*Combine register values*/
+	int16_t gyroRawSigned[3];
+	gyroRawSigned[0] = regData[0]<<8|regData[1];
+	gyroRawSigned[1] = regData[2]<<8|regData[3];
+	gyroRawSigned[2] = regData[4]<<8|regData[5];
+
+	/*Page 31 equation for converting to deg/s*/
+	dev->gyro[0] = gyroRawSigned[0] / 131;
+	dev->gyro[1] = gyroRawSigned[1] / 131;
+	dev->gyro[2] = gyroRawSigned[2] / 131;
 
 	return status;
 }
